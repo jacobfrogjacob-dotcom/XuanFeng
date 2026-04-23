@@ -3,201 +3,266 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>玄鋒電競 | XF-CORE</title>
+    <title>玄鋒電競 | XF-CORE ADMIN v6.0</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Noto+Sans+TC:wght@500;900&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: #ffaa00; --bg: #050505; --cyan: #00f2ff; --pink: #ff0050; --glass: rgba(255, 255, 255, 0.03); }
-        body { background: var(--bg); color: #fff; font-family: 'Orbitron', 'Noto Sans TC', sans-serif; margin: 0; padding: 20px; text-align: center; overflow-x: hidden; }
-        
-        .container { width: 95%; max-width: 420px; margin: 0 auto; position: relative; }
-        h1 { font-size: 42px; font-style: italic; font-weight: 900; background: linear-gradient(180deg, #fff 40%, #777 100%); -webkit-background-clip: text; -webkit-fill-color: transparent; margin: 30px 0 5px 0; filter: drop-shadow(0 0 10px rgba(0,242,255,0.3)); }
-        .sub-title { color: var(--cyan); font-size: 12px; letter-spacing: 3px; margin-bottom: 40px; }
+        :root { --gold: #ffaa00; --bg: #050505; --cyan: #00f2ff; --pink: #ff0050; --glass: rgba(255, 255, 255, 0.05); }
+        body { background: var(--bg); color: #fff; font-family: 'Orbitron', 'Noto Sans TC', sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
 
-        /* 第一層：主按鈕列表 */
+        /* 背景掃描線特效 */
+        .scanline { width: 100%; height: 100px; z-index: 10; background: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(0,242,255,0.05) 50%, rgba(0,0,0,0) 100%); position: fixed; top: -100px; animation: scan 6s linear infinite; pointer-events: none; }
+        @keyframes scan { to { top: 100%; } }
+
+        .container { width: 95%; max-width: 450px; margin: 40px auto; position: relative; z-index: 20; }
+        h1 { font-size: 42px; font-style: italic; font-weight: 900; background: linear-gradient(180deg, #fff 40%, #777 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-align: center; margin-bottom: 5px; }
+        .sub-title { color: var(--cyan); font-size: 10px; letter-spacing: 5px; text-align: center; margin-bottom: 50px; }
+
+        /* 首頁按鈕 */
         .main-menu { display: flex; flex-direction: column; gap: 15px; }
-        .btn { text-decoration: none; padding: 18px; background: var(--glass); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 18px; font-weight: 900; clip-path: polygon(8% 0, 100% 0, 92% 100%, 0 100%); transition: 0.3s; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .btn:hover { transform: scale(1.05) skewX(-2deg); background: rgba(255,255,255,0.1); border-color: var(--cyan); box-shadow: 0 0 20px rgba(0, 242, 255, 0.3); }
+        .btn { text-decoration: none; padding: 18px; background: var(--glass); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 18px; font-weight: 900; clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%); transition: 0.3s; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .btn:hover { background: rgba(0,242,255,0.1); border-color: var(--cyan); box-shadow: 0 0 20px rgba(0,242,255,0.3); transform: scale(1.03); }
         .btn-tiktok { border-left: 6px solid var(--pink); }
         .btn-players { border-left: 6px solid var(--gold); color: var(--gold); }
-        .btn-line { border-left: 6px solid #00b900; }
+        .btn-discord { border-left: 6px solid #5865f2; }
 
-        /* 彈窗基礎樣式 */
+        /* 賽博龐克彈窗系統 */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; backdrop-filter: blur(15px); justify-content: center; align-items: center; }
-        .modal-content { background: #0a0a0a; padding: 25px; border: 2px solid var(--gold); width: 85%; max-width: 380px; position: relative; clip-path: polygon(0 0, 92% 0, 100% 8%, 100% 100%, 8% 100%, 0 92%); box-shadow: 0 0 40px rgba(255,170,0,0.2); }
+        .modal-content { background: #0a0a0a; padding: 30px; border: 2px solid var(--gold); width: 88%; max-width: 400px; position: relative; clip-path: polygon(0 0, 92% 0, 100% 8%, 100% 100%, 8% 100%, 0 92%); box-shadow: 0 0 50px rgba(255,170,0,0.2); max-height: 85vh; overflow-y: auto; }
+        .modal-content h2 { color: var(--gold); font-style: italic; letter-spacing: 2px; border-bottom: 1px solid #333; padding-bottom: 15px; margin-bottom: 25px; }
 
-        /* 第二層：遊戲分類選單 */
-        .game-nav { display: flex; justify-content: center; gap: 10px; margin: 20px 0; border-bottom: 1px solid #222; padding-bottom: 15px; }
-        .tab { padding: 8px 15px; border: 1px solid #333; cursor: pointer; font-size: 13px; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%); transition: 0.3s; color: #666; }
-        .tab.active { background: var(--cyan); color: #000; border-color: var(--cyan); font-weight: 900; }
-
-        /* 打手卡片列表 */
-        #player-list { max-height: 350px; overflow-y: auto; text-align: left; }
-        .p-card { background: rgba(255,255,255,0.02); border: 1px solid #1a1a1a; padding: 12px; margin-bottom: 10px; display: flex; align-items: center; gap: 15px; cursor: pointer; transition: 0.2s; border-left: 4px solid var(--gold); }
-        .p-card:hover { background: rgba(0,242,255,0.05); border-color: var(--cyan); }
-        .p-avatar { width: 55px; height: 55px; border-radius: 50%; border: 2px solid var(--cyan); object-fit: cover; }
-
-        /* 管理員登入與新增介面 (CSS 強化) */
-        .admin-box h2 { color: var(--gold); font-style: italic; letter-spacing: 2px; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
-        .admin-form input, .admin-form select, .admin-form textarea { width: 100%; background: #151515; border: 1px solid #333; color: #fff; padding: 12px; margin-bottom: 12px; box-sizing: border-box; outline: none; font-family: inherit; }
-        .admin-form input:focus { border-color: var(--cyan); box-shadow: 0 0 10px rgba(0,242,255,0.2); }
+        /* 後台管理表單 */
+        .admin-section { background: rgba(255,170,0,0.03); border: 1px dashed #444; padding: 15px; margin-bottom: 25px; text-align: left; }
+        .admin-section h3 { font-size: 14px; color: var(--cyan); margin-bottom: 15px; border-left: 3px solid var(--cyan); padding-left: 10px; }
+        
+        input, select, textarea { width: 100%; background: #111; border: 1px solid #333; color: #fff; padding: 12px; margin-bottom: 12px; box-sizing: border-box; font-family: inherit; font-size: 14px; }
+        input:focus { border-color: var(--gold); outline: none; box-shadow: 0 0 10px rgba(255,170,0,0.2); }
+        
         .btn-exe { width: 100%; padding: 15px; background: var(--gold); color: #000; font-weight: 900; border: none; cursor: pointer; clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%); }
+        .btn-exe:hover { filter: brightness(1.2); }
 
-        .close-txt { color: #ff4444; font-size: 13px; margin-top: 20px; cursor: pointer; font-weight: bold; display: inline-block; }
-        .admin-trigger { margin-top: 80px; color: #111; cursor: pointer; font-size: 10px; letter-spacing: 3px; }
+        /* 打手與遊戲列表管理 */
+        .mgmt-list { max-height: 200px; overflow-y: auto; margin-top: 10px; }
+        .mgmt-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #000; border: 1px solid #222; margin-bottom: 5px; }
+        .btn-kick { background: var(--pink); color: #fff; border: none; padding: 5px 10px; cursor: pointer; font-size: 11px; clip-path: skewX(-10deg); }
+
+        /* 打手名錄與詳細檔案 */
+        .game-tabs { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
+        .tab { padding: 8px 15px; border: 1px solid #333; white-space: nowrap; cursor: pointer; font-size: 12px; transition: 0.3s; }
+        .tab.active { background: var(--cyan); color: #000; border-color: var(--cyan); font-weight: bold; }
+        
+        .player-card { display: flex; align-items: center; gap: 15px; background: #111; padding: 12px; border: 1px solid #222; margin-bottom: 10px; cursor: pointer; border-left: 4px solid var(--gold); }
+        .p-avatar { width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--cyan); object-fit: cover; }
+
+        .close-btn { color: #555; cursor: pointer; font-size: 12px; margin-top: 25px; display: inline-block; font-weight: bold; }
+        .admin-trigger { margin-top: 100px; opacity: 0.05; cursor: pointer; text-align: center; font-size: 10px; letter-spacing: 5px; }
     </style>
 </head>
 <body>
+
+<div class="scanline"></div>
 
 <div class="container">
     <h1>玄鋒電競</h1>
     <div class="sub-title">XUAN FENG COMMAND CENTER</div>
 
-    <div class="main-menu">
+    <div class="main-menu" id="home-buttons">
         <a href="https://www.tiktok.com/@xuenfeng_xu666_?_r=1" target="_blank" class="btn btn-tiktok">TIKTOK 頻道</a>
-        <div class="btn btn-players" onclick="openPlayerModal()">頂尖打手名錄</div>
-        <a href="https://lin.ee/rTNT2B6" target="_blank" class="btn btn-line">LINE 官方客服</a>
-        <a href="https://youtube.com/@xfg-mtd" target="_blank" class="btn">YOUTUBE 賽事</a>
+        <div class="btn btn-players" onclick="openModal('list-modal')">頂尖打手名錄</div>
+        <a href="https://discord.gg/vCcFpKuzR" target="_blank" class="btn btn-discord">DISCORD 語音</a>
+        <a href="https://lin.ee/rTNT2B6" target="_blank" class="btn">LINE 官方客服</a>
     </div>
 
-    <div class="admin-trigger" onclick="tryAdmin()">SYSTEM_DATABASE_AUTH</div>
+    <div class="admin-trigger" onclick="authAdmin()">ROOT_ACCESS_v6.0</div>
 </div>
 
 <div id="list-modal" class="modal">
     <div class="modal-content">
-        <h2 style="color:var(--gold); margin:0;">ELITE PLAYERS</h2>
-        
-        <div class="game-nav">
-            <div class="tab active" onclick="setGame('PUBG')">PUBG</div>
-            <div class="tab" onclick="setGame('三角洲')">三角洲</div>
-            <div class="tab" onclick="setGame('其他')">其他</div>
-        </div>
-
-        <div id="player-list">載入中...</div>
-        <div class="close-txt" onclick="closeModal('list-modal')">[ 返回主選單 ]</div>
+        <h2>ELITE DIRECTORY</h2>
+        <div class="game-tabs" id="list-tabs"></div>
+        <div id="players-display">載入中...</div>
+        <div class="close-btn" onclick="closeModal('list-modal')">[ 返回主選單 ]</div>
     </div>
 </div>
 
 <div id="profile-modal" class="modal">
-    <div class="modal-content" id="profile-body"></div>
+    <div class="modal-content" id="profile-content"></div>
 </div>
 
 <div id="admin-modal" class="modal">
-    <div class="modal-content admin-box">
-        <h2>ADMIN CONSOLE</h2>
+    <div class="modal-content">
+        <h2>XF-ADMIN CONSOLE</h2>
+        
         <div class="admin-form">
-            <input type="text" id="adm-name" placeholder="打手代號">
-            <select id="adm-game">
-                <option value="PUBG">PUBG</option>
-                <option value="三角洲">三角洲</option>
-                <option value="其他">其他</option>
-            </select>
-            <textarea id="adm-desc" rows="3" placeholder="打手詳細介紹..."></textarea>
-            <input type="text" id="adm-url" placeholder="個人主頁連結">
-            <input type="file" id="adm-file" accept="image/*">
-            <button class="btn-exe" onclick="doUpload()">執行：同步至雲端</button>
+            <div class="admin-section">
+                <h3>打手入庫 / 更新檔案</h3>
+                <input type="text" id="p-name" placeholder="打手代號">
+                <select id="p-game-select"></select>
+                <textarea id="p-desc" rows="2" placeholder="個人簡介 (例如：PUBG 頂尖狙擊手)"></textarea>
+                <input type="text" id="p-url" placeholder="TikTok/個人頻道連結">
+                <input type="file" id="p-file" accept="image/*">
+                <button class="btn-exe" onclick="savePlayer()">執行指令：資料入庫</button>
+            </div>
+
+            <div class="admin-section">
+                <h3>現有打手名單管理</h3>
+                <div class="mgmt-list" id="mgmt-players">載入中...</div>
+            </div>
+
+            <div class="admin-section">
+                <h3>遊戲類別管理 (新增/刪除)</h3>
+                <div style="display:flex; gap:5px; margin-bottom:10px;">
+                    <input type="text" id="new-game-name" placeholder="新遊戲名稱" style="margin-bottom:0;">
+                    <button onclick="addGame()" style="background:var(--cyan); border:none; padding:0 10px; font-weight:900;">＋</button>
+                </div>
+                <div class="mgmt-list" id="mgmt-games"></div>
+            </div>
         </div>
-        <div class="close-txt" onclick="closeModal('admin-modal')">[ 退出系統 ]</div>
+
+        <div class="close-btn" onclick="closeModal('admin-modal')">[ 斷開管理系統連結 ]</div>
     </div>
 </div>
 
 <script>
+    // Supabase 初始化
     const SB_URL = "https://chjuzpbocdkdiyuuziye.supabase.co"; 
     const SB_KEY = "sb_publishable_kFflCNsyHLFgc8Ee_iWAEw_q5AFG3YC";
     const _sb = supabase.createClient(SB_URL, SB_KEY);
 
-    let curGame = 'PUBG';
-    let playersData = [];
+    let allPlayers = [];
+    let games = ["PUBG", "三角洲", "其他"]; // 預設值，之後可從資料庫擴充
+    let currentTab = games[0];
 
-    // 初始化：先抓資料但不顯示彈窗
-    async function fetchPlayers() {
+    // 初始化讀取
+    async function init() {
         const { data } = await _sb.from('players').select('*').order('id', { ascending: false });
-        playersData = data || [];
-        renderList();
+        allPlayers = data || [];
+        renderTabs();
+        renderPlayers();
+        updateAdminOptions();
     }
 
-    function openPlayerModal() {
-        document.getElementById('list-modal').style.display = 'flex';
-        fetchPlayers();
+    // --- 打手名錄邏輯 ---
+    function renderTabs() {
+        const tabBox = document.getElementById('list-tabs');
+        tabBox.innerHTML = games.map(g => `<div class="tab ${g===currentTab?'active':''}" onclick="switchTab('${g}')">${g}</div>`).join('');
     }
 
-    function setGame(g) {
-        curGame = g;
-        document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.innerText === g));
-        renderList();
+    function switchTab(g) {
+        currentTab = g;
+        renderTabs();
+        renderPlayers();
     }
 
-    function renderList() {
-        const list = document.getElementById('player-list');
-        const filtered = playersData.filter(p => p.game_type === curGame);
-        
-        list.innerHTML = filtered.length ? filtered.map(p => `
-            <div class="p-card" onclick="showProfile(${p.id})">
+    function renderPlayers() {
+        const display = document.getElementById('players-display');
+        const filtered = allPlayers.filter(p => p.game_type === currentTab);
+        display.innerHTML = filtered.length ? filtered.map(p => `
+            <div class="player-card" onclick="openProfile(${p.id})">
                 <img src="${p.avatar_url || 'https://via.placeholder.com/100'}" class="p-avatar">
-                <div style="flex:1">
-                    <div style="font-weight:900; font-size:18px;">${p.name}</div>
-                    <div style="font-size:10px; color:var(--cyan);">LEVEL: ELITE</div>
+                <div style="text-align:left">
+                    <div style="font-size:18px; font-weight:900;">${p.name}</div>
+                    <div style="color:var(--cyan); font-size:10px;">ELITE STATUS</div>
                 </div>
-                <div style="color:var(--gold)">⚡</div>
+                <div style="margin-left:auto; color:var(--gold);">⚡</div>
             </div>
-        `).join('') : "<div style='color:#333; padding:20px;'>無存檔數據</div>";
+        `).join('') : "<div style='color:#333; padding:20px;'>無資料</div>";
     }
 
-    function showProfile(id) {
-        const p = playersData.find(x => x.id === id);
-        const body = document.getElementById('profile-body');
-        body.innerHTML = `
-            <img src="${p.avatar_url || 'https://via.placeholder.com/100'}" class="p-avatar" style="width:100px; height:100px; border-width:4px;">
+    function openProfile(id) {
+        const p = allPlayers.find(x => x.id === id);
+        const content = document.getElementById('profile-content');
+        content.innerHTML = `
+            <img src="${p.avatar_url || 'https://via.placeholder.com/100'}" class="p-avatar" style="width:120px; height:120px; border-width:4px;">
             <h2 style="color:var(--gold); margin:15px 0;">${p.name}</h2>
-            <p style="color:#888; font-size:14px; text-align:left; line-height:1.6; min-height:80px;">${p.description || '暫無介紹。'}</p>
-            <a href="${p.url}" target="_blank" class="btn-exe" style="display:block; text-decoration:none; text-align:center;">前往頻道</a>
-            <div class="close-txt" onclick="closeModal('profile-modal')">[ 返回名單 ]</div>
-            ${window.isAdm ? `<button onclick="delP(${p.id})" style="display:block; margin:20px auto; color:#222; background:none; border:none;">DELETE_DATA</button>` : ''}
+            <p style="color:var(--cyan); font-size:12px;">分類: ${p.game_type}</p>
+            <p style="text-align:left; color:#888; font-size:14px; line-height:1.6; margin:20px 0;">${p.description || '該打手尚未填寫個人檔案。'}</p>
+            <a href="${p.url}" target="_blank" class="btn-exe" style="display:block; text-decoration:none; text-align:center;">前往通訊頻道</a>
+            <div class="close-btn" onclick="closeModal('profile-modal')">[ 返回名錄 ]</div>
         `;
-        document.getElementById('profile-modal').style.display = 'flex';
+        openModal('profile-modal');
     }
 
-    async function doUpload() {
-        const name = document.getElementById('adm-name').value;
-        const game = document.getElementById('adm-game').value;
-        const desc = document.getElementById('adm-desc').value;
-        const url = document.getElementById('adm-url').value;
-        const file = document.getElementById('adm-file').files[0];
+    // --- 管理員邏輯 ---
+    async function savePlayer() {
+        const name = document.getElementById('p-name').value;
+        const game = document.getElementById('p-game-select').value;
+        const desc = document.getElementById('p-desc').value;
+        const url = document.getElementById('p-url').value;
+        const file = document.getElementById('p-file').files[0];
 
-        if(!name || !url) return alert("請填寫名稱與連結");
+        if(!name || !url) return alert("名稱與連結為必填！");
 
         let avUrl = "";
-        if (file) {
-            const fName = `${Date.now()}.png`;
+        if(file) {
+            const fName = `${Date.now()}_${file.name}`;
             const { data } = await _sb.storage.from('avatars').upload(fName, file);
-            if (data) {
+            if(data) {
                 const { data: pData } = _sb.storage.from('avatars').getPublicUrl(fName);
                 avUrl = pData.publicUrl;
             }
         }
 
-        await _sb.from('players').insert([{ name, url, game_type: game, description: desc, avatar_url: avUrl }]);
-        alert("資料已上傳");
-        location.reload();
+        const { error } = await _sb.from('players').insert([{ name, game_type: game, description: desc, url, avatar_url: avUrl }]);
+        if(error) alert("上傳失敗：" + error.message);
+        else { alert("入庫成功！"); location.reload(); }
     }
 
-    async function delP(id) {
-        if(confirm("確定刪除？")) {
+    function updateAdminOptions() {
+        const sel = document.getElementById('p-game-select');
+        sel.innerHTML = games.map(g => `<option value="${g}">${g}</option>`).join('');
+        
+        const mgmtP = document.getElementById('mgmt-players');
+        mgmtP.innerHTML = allPlayers.map(p => `
+            <div class="mgmt-item">
+                <span>${p.name} (${p.game_type})</span>
+                <button class="btn-kick" onclick="deletePlayer(${p.id})">踢出</button>
+            </div>
+        `).join('');
+
+        const mgmtG = document.getElementById('mgmt-games');
+        mgmtG.innerHTML = games.map(g => `
+            <div class="mgmt-item">
+                <span>${g}</span>
+                <button class="btn-kick" style="background:#444" onclick="removeGame('${g}')">刪除</button>
+            </div>
+        `).join('');
+    }
+
+    async function deletePlayer(id) {
+        if(confirm("確定要將此打手踢出系統？")) {
             await _sb.from('players').delete().eq('id', id);
             location.reload();
         }
     }
 
-    function tryAdmin() {
-        if(prompt("請輸入系統密碼：") === "@8888") {
-            window.isAdm = true;
-            document.getElementById('admin-modal').style.display = 'flex';
+    function addGame() {
+        const name = document.getElementById('new-game-name').value;
+        if(name && !games.includes(name)) {
+            games.push(name);
+            updateAdminOptions();
+            renderTabs();
+            document.getElementById('new-game-name').value = '';
         }
     }
 
+    function removeGame(name) {
+        games = games.filter(g => g !== name);
+        updateAdminOptions();
+        renderTabs();
+    }
+
+    function authAdmin() {
+        if(prompt("請輸入系統核心密碼：") === "@8888") {
+            openModal('admin-modal');
+            updateAdminOptions();
+        }
+    }
+
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    init();
 </script>
-</body>
-</html>
 </body>
 </html>

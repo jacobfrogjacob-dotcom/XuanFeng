@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>玄鋒電競 | 雲端管理系統</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root { --gold: #ffaa00; --bg: #050505; --cyan: #00f2ff; }
+        body { background: var(--bg); color: #fff; font-family: 'Noto Sans TC', sans-serif; text-align: center; margin: 0; padding: 20px; }
+        .btn { display: block; width: 100%; max-width: 300px; margin: 10px auto; padding: 15px; background: #111; border: 1px solid #333; color: #fff; text-decoration: none; font-weight: bold; cursor: pointer; border-radius: 4px; }
+        .btn:hover { border-color: var(--cyan); box-shadow: 0 0 15px rgba(0,242,255,0.2); }
+        #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(8px); }
+        .modal-content { background: #111; padding: 25px; border: 2px solid var(--gold); width: 85%; max-width: 350px; }
+        input { width: 100%; padding: 12px; margin-bottom: 10px; background: #222; border: 1px solid #444; color: #fff; box-sizing: border-box; outline: none; }
+        .player-item { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #222; align-items: center; }
+        .del-btn { background: #ff4444; border: none; color: white; padding: 5px 10px; cursor: pointer; border-radius: 3px; font-weight: bold; }
+        .admin-trigger { margin-top: 80px; color: #111; cursor: pointer; font-size: 10px; letter-spacing: 2px; }
+    </style>
+</head>
+<body>
+
+    <h1 style="font-style: italic; letter-spacing: 3px; font-weight: 900;">玄鋒電競</h1>
+    <p style="color: #444; font-size: 12px; margin-bottom: 40px;">XUAN FENG COMMAND CENTER</p>
+
+    <div class="btn" onclick="openModal()">查看打手名錄</div>
+    <a href="https://lin.ee/rTNT2B6" class="btn" style="border-left: 5px solid #00b900;">LINE 官方客服</a>
+
+    <div class="admin-trigger" onclick="adminLogin()">DB_CLOUD_EXECUTE</div>
+
+    <div id="modal">
+        <div class="modal-content">
+            <h2 style="color: var(--gold); margin-top: 0; font-style: italic;">DATA CENTER</h2>
+            
+            <div id="admin-panel" style="display: none; background: rgba(255,170,0,0.05); padding: 15px; margin-bottom: 20px; border: 1px dashed var(--gold);">
+                <input type="text" id="p-name" placeholder="打手代號">
+                <input type="text" id="p-url" placeholder="TikTok 連結">
+                <button class="btn" style="background: var(--gold); color: #000; margin: 0; width: 100%;" onclick="addPlayer()">執行指令：發布刊登</button>
+            </div>
+
+            <div id="player-box" style="text-align: left; max-height: 300px; overflow-y: auto; margin-bottom: 20px;">資料載入中...</div>
+            <div onclick="closeModal()" style="color: #ff4444; cursor: pointer; font-weight: bold;">[ 關閉系統 ]</div>
+        </div>
+    </div>
+
+    <script>
+        // --- 已幫你填入專案資訊 ---
+        const SB_URL = "https://chjuzpbocdkdiyuuziye.supabase.co"; 
+        const SB_KEY = "sb_publishable_kFflCNsyHLFgc8Ee_iWAEw_q5AFG3YC";
+        const _supabase = supabase.createClient(SB_URL, SB_KEY);
+
+        let isAdmin = false;
+
+        async function refreshList() {
+            const box = document.getElementById('player-box');
+            const { data, error } = await _supabase.from('players').select('*').order('id', { ascending: false });
+            
+            if (error) {
+                box.innerHTML = "資料庫連線錯誤，請檢查 SQL 指令是否執行。";
+                return;
+            }
+
+            box.innerHTML = data.length ? data.map(p => `
+                <div class="player-item">
+                    <a href="${p.url}" target="_blank" style="color: #fff; text-decoration: none; font-weight: bold;">${p.name}</a>
+                    ${isAdmin ? `<button class="del-btn" onclick="delPlayer(${p.id})">撤下</button>` : ''}
+                </div>
+            `).join('') : "<div style='color:#444'>目前無指令存檔</div>";
+        }
+
+        async function addPlayer() {
+            const name = document.getElementById('p-name').value;
+            const url = document.getElementById('p-url').value;
+            if(!name || !url) return alert("請完整填寫資訊");
+
+            const { error } = await _supabase.from('players').insert([{ name, url }]);
+            if (error) {
+                alert("新增失敗，請確認 SQL 中已關閉 RLS 限制。");
+            } else {
+                document.getElementById('p-name').value = '';
+                document.getElementById('p-url').value = '';
+                refreshList();
+            }
+        }
+
+        async function delPlayer(id) {
+            if(confirm("確定刪除此打手指令？")) {
+                await _supabase.from('players').delete().eq('id', id);
+                refreshList();
+            }
+        }
+
+        function adminLogin() {
+            if(prompt("請輸入後端授權碼：") === "@8888") {
+                isAdmin = true;
+                document.getElementById('admin-panel').style.display = 'block';
+                openModal();
+            }
+        }
+
+        function openModal() { document.getElementById('modal').style.display = 'flex'; refreshList(); }
+        function closeModal() { document.getElementById('modal').style.display = 'none'; }
+    </script>
+</body>
+</html>
+

@@ -3,52 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>玄封電競 | XF-CORE MASTER</title>
+    <title>玄封電競 | XUAN FENG OFFICIAL</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Noto+Sans+TC:wght@500;900&display=swap" rel="stylesheet">
     <style>
         :root { --gold: #ffaa00; --bg: #050505; --cyan: #00f2ff; --pink: #ff0050; --glass: rgba(255, 255, 255, 0.05); }
         body { background: var(--bg); color: #fff; font-family: 'Orbitron', 'Noto Sans TC', sans-serif; margin: 0; padding: 0; text-align: center; overflow-x: hidden; }
         
-        /* 視覺特效 */
         .scanline { width: 100%; height: 100px; z-index: 10; pointer-events: none; position: fixed; top: -100px; background: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(0,242,255,0.05) 50%, rgba(0,0,0,0) 100%); animation: scan 6s linear infinite; }
         @keyframes scan { to { top: 100%; } }
 
         .container { width: 95%; max-width: 450px; margin: 40px auto; position: relative; z-index: 20; }
-        h1 { font-size: 45px; font-weight: 900; font-style: italic; background: linear-gradient(180deg, #fff 30%, #777 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; }
-        .sub-title { color: var(--cyan); font-size: 10px; letter-spacing: 5px; margin-bottom: 40px; }
+        h1 { font-size: 48px; font-weight: 900; font-style: italic; background: linear-gradient(180deg, #fff 30%, #777 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; letter-spacing: -2px; }
+        .sub-title { color: var(--cyan); font-size: 10px; letter-spacing: 5px; margin-bottom: 30px; }
 
-        /* 首頁按鈕 */
+        /* 凸顯下單按鈕 */
+        .btn-order { 
+            text-decoration: none; display: block; padding: 22px; 
+            background: var(--gold); color: #000; 
+            font-size: 24px; font-weight: 900; 
+            margin-bottom: 20px; border-radius: 4px;
+            clip-path: polygon(4% 0, 100% 0, 96% 100%, 0 100%);
+            box-shadow: 0 0 20px rgba(255,170,0,0.4);
+            animation: pulse 2s infinite;
+            transition: 0.3s;
+        }
+        @keyframes pulse { 
+            0% { transform: scale(1); box-shadow: 0 0 10px rgba(255,170,0,0.4); }
+            50% { transform: scale(1.03); box-shadow: 0 0 30px rgba(255,170,0,0.7); }
+            100% { transform: scale(1); box-shadow: 0 0 10px rgba(255,170,0,0.4); }
+        }
+        .btn-order:hover { filter: brightness(1.2); }
+
+        /* 一般導覽按鈕 */
         .main-menu { display: flex; flex-direction: column; gap: 12px; }
         .nav-btn { text-decoration: none; padding: 18px; background: var(--glass); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 17px; font-weight: 900; clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%); transition: 0.3s; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .nav-btn:hover { background: rgba(0,242,255,0.1); border-color: var(--cyan); box-shadow: 0 0 15px rgba(0,242,255,0.2); transform: scale(1.02); }
-        .btn-tiktok { border-left: 5px solid var(--pink); }
-        .btn-players { border-left: 5px solid var(--gold); color: var(--gold); }
-        .btn-discord { border-left: 5px solid #5865f2; }
-
+        .nav-btn:hover { background: rgba(0,242,255,0.1); border-color: var(--cyan); box-shadow: 0 0 15px rgba(0,242,255,0.2); }
+        
         /* 彈窗 UI */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; backdrop-filter: blur(15px); justify-content: center; align-items: center; padding: 20px; }
-        .modal-content { background: #0a0a0a; padding: 25px; border: 2px solid var(--gold); width: 100%; max-width: 400px; max-height: 85vh; overflow-y: auto; position: relative; clip-path: polygon(0 0, 92% 0, 100% 8%, 100% 100%, 8% 100%, 0 92%); }
-        
+        .modal-content { background: #0a0a0a; padding: 25px; border: 2px solid var(--gold); width: 100%; max-width: 400px; max-height: 85vh; overflow-y: auto; position: relative; }
         .game-tabs { display: flex; gap: 10px; margin: 20px 0; border-bottom: 1px solid #222; padding-bottom: 15px; overflow-x: auto; }
-        .tab { padding: 8px 16px; border: 1px solid #333; cursor: pointer; font-size: 13px; white-space: nowrap; transition: 0.3s; color: #666; }
-        .tab.active { background: var(--cyan); color: #000; border-color: var(--cyan); font-weight: 900; }
+        .tab { padding: 8px 16px; border: 1px solid #333; cursor: pointer; font-size: 13px; white-space: nowrap; color: #666; }
+        .tab.active { background: var(--cyan); color: #000; font-weight: 900; }
 
-        /* 打手列表與卡片 */
         .p-card { background: rgba(255,255,255,0.02); border: 1px solid #1a1a1a; padding: 12px; display: flex; align-items: center; gap: 15px; cursor: pointer; border-left: 4px solid var(--gold); margin-bottom: 10px; }
-        .p-avatar { width: 55px; height: 55px; border-radius: 50%; border: 2px solid var(--cyan); object-fit: cover; background: #222; }
+        .p-avatar { width: 55px; height: 55px; border-radius: 50%; border: 2px solid var(--cyan); object-fit: cover; background: #111; }
 
-        /* 後台管理表單 */
+        /* 後台樣式 */
         .admin-section { text-align: left; background: rgba(255,255,255,0.01); border: 1px solid #222; padding: 15px; margin-bottom: 20px; }
-        input, select, textarea { width: 100%; background: #111; border: 1px solid #333; color: #fff; padding: 12px; margin-bottom: 12px; box-sizing: border-box; font-family: inherit; }
+        input, select, textarea { width: 100%; background: #111; border: 1px solid #333; color: #fff; padding: 12px; margin-bottom: 12px; box-sizing: border-box; }
         .btn-exe { width: 100%; padding: 15px; background: var(--gold); color: #000; font-weight: 900; border: none; cursor: pointer; clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%); }
-
         .mgmt-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #000; border-bottom: 1px solid #111; font-size: 13px; }
-        .btn-edit { background: #444; color: #fff; border: none; padding: 5px 10px; cursor: pointer; margin-right: 5px; }
-        .btn-kick { background: var(--pink); color: #fff; border: none; padding: 5px 10px; cursor: pointer; }
 
-        .close-txt { color: #555; font-size: 12px; margin-top: 20px; cursor: pointer; display: inline-block; }
-        .admin-trigger { margin-top: 80px; opacity: 0.05; cursor: pointer; }
+        .close-txt { color: #555; font-size: 12px; margin-top: 20px; cursor: pointer; }
+        .admin-trigger { margin-top: 60px; opacity: 0.03; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -57,49 +66,54 @@
 
 <div class="container">
     <h1>玄封電競</h1>
-    <div class="sub-title">XUAN FENG CONTROL v9.5</div>
+    <div class="sub-title">XUAN FENG ELITE v10.0</div>
+
+    <a href="https://xuanfeng.live/" target="_blank" class="btn-order">點擊下單官網</a>
 
     <div class="main-menu">
-        <a href="https://www.tiktok.com/@xuenfeng_xu666_?_r=1" target="_blank" class="nav-btn btn-tiktok">TIKTOK 頻道</a>
-        <div class="nav-btn btn-players" onclick="openPlayerList()">頂尖打手名錄</div>
-        <a href="https://discord.gg/vCcFpKuzR" target="_blank" class="nav-btn btn-discord">DISCORD 語音</a>
+        <div class="nav-btn" onclick="openPlayerList()" style="color:var(--gold); border-color:var(--gold);">頂尖打手名錄</div>
+        <a href="https://www.tiktok.com/@xuenfeng_xu666_?_r=1" target="_blank" class="nav-btn">TIKTOK 頻道</a>
+        <a href="https://discord.gg/vCcFpKuzR" target="_blank" class="nav-btn">DISCORD 語音</a>
         <a href="https://lin.ee/rTNT2B6" target="_blank" class="nav-btn">LINE 官方客服</a>
         <a href="https://youtube.com/@xfg-mtd?si=WVPbE8pA1G5B-Unt" target="_blank" class="nav-btn">YOUTUBE 賽事</a>
     </div>
 
-    <div class="admin-trigger" onclick="adminAuth()">CORE_ACCESS</div>
+    <div class="admin-trigger" onclick="adminAuth()">SYSTEM_MGMT</div>
 </div>
 
 <div id="list-modal" class="modal"><div class="modal-content">
     <h2 style="color:var(--gold)">玄封打手名錄</h2>
-    <div class="game-tabs"><div class="tab active" onclick="setFilter('PUBG')">PUBG</div><div class="tab" onclick="setFilter('三角洲')">三角洲</div><div class="tab" onclick="setFilter('其他')">其他</div></div>
-    <div id="player-list">資料讀取中...</div>
-    <div class="close-txt" onclick="closeModal('list-modal')">[ 關閉選單 ]</div>
+    <div class="game-tabs">
+        <div class="tab active" onclick="setFilter('PUBG')">PUBG</div>
+        <div class="tab" onclick="setFilter('三角洲')">三角洲</div>
+        <div class="tab" onclick="setFilter('其他')">其他</div>
+    </div>
+    <div id="player-list">Loading...</div>
+    <div class="close-txt" onclick="closeModal('list-modal')">[ 關閉 ]</div>
 </div></div>
 
 <div id="profile-modal" class="modal"><div class="modal-content" id="profile-body"></div></div>
 
 <div id="admin-modal" class="modal"><div class="modal-content">
-    <h2 style="color:var(--gold)">玄封核心管理後台</h2>
+    <h2 style="color:var(--gold)">核心後台</h2>
     <div class="admin-section">
-        <h3 id="form-title">成員入庫管理</h3>
+        <h3 id="form-title">成員入庫/編輯</h3>
         <input type="text" id="adm-name" placeholder="打手代號">
         <select id="adm-game"><option value="PUBG">PUBG</option><option value="三角洲">三角洲</option><option value="其他">其他</option></select>
-        <textarea id="adm-desc" placeholder="打手簡介與戰績"></textarea>
-        <input type="text" id="adm-url" placeholder="個人主頁連結">
-        <input type="text" id="adm-img" placeholder="頭像圖片網址 (URL)">
-        <button id="submit-btn" class="btn-exe" onclick="handleData()">確認並執行資料存檔</button>
-        <button id="cancel-btn" style="display:none; background:none; color:#555; border:none; margin-top:10px; cursor:pointer;" onclick="resetForm()">[ 取消編輯 ]</button>
+        <textarea id="adm-desc" placeholder="簡介"></textarea>
+        <input type="text" id="adm-url" placeholder="主頁連結">
+        <input type="text" id="adm-img" placeholder="頭像網址 (URL)">
+        <button id="submit-btn" class="btn-exe" onclick="handleData()">執行存檔</button>
+        <button id="cancel-btn" style="display:none; color:#555; border:none; background:none; margin-top:10px;" onclick="resetForm()">[ 取消 ]</button>
     </div>
-    <div class="admin-section"><h3>現有名單管理</h3><div id="mgmt-box"></div></div>
-    <div class="close-txt" onclick="closeModal('admin-modal')">[ 斷開核心連結 ]</div>
+    <div class="admin-section"><h3>名單管理</h3><div id="mgmt-box"></div></div>
+    <div class="close-txt" onclick="closeModal('admin-modal')">[ 退出 ]</div>
 </div></div>
 
 <script>
     const SB_URL = "https://chjuzpbocdkdiyuuziye.supabase.co"; 
     const SB_KEY = "sb_publishable_kFflCNsyHLFgc8Ee_iWAEw_q5AFG3YC";
     const _sb = supabase.createClient(SB_URL, SB_KEY);
-    
     let allPlayers = [], filterGame = 'PUBG', editId = null;
 
     async function init() {
@@ -117,33 +131,324 @@
         const filtered = allPlayers.filter(p => p.game_type === filterGame);
         box.innerHTML = filtered.map(p => `
             <div class="p-card" onclick="showProfile(${p.id})">
-                <img src="${p.avatar_url || ''}" class="p-avatar" onerror="this.src='https://via.placeholder.com/100?text=XF'">
-                <div style="text-align:left"><div style="font-weight:900;">${p.name}</div><div style="color:var(--cyan); font-size:10px;">ELITE STATUS</div></div>
-            </div>
-        `).join('') || "目前尚無打手資料";
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>玄封電競 | XF-CORE SYSTEM</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Noto+Sans+TC:wght@500;900&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --gold: #ffaa00; 
+            --bg: #050505; 
+            --cyan: #00f2ff; 
+            --pink: #ff0050; 
+            --glass: rgba(255, 255, 255, 0.05); 
+        }
+
+        /* 基礎樣式與掃描線特效 */
+        body { 
+            background: var(--bg); 
+            color: #fff; 
+            font-family: 'Orbitron', 'Noto Sans TC', sans-serif; 
+            margin: 0; padding: 0; 
+            text-align: center; 
+            overflow-x: hidden; 
+        }
+        
+        .scanline { 
+            width: 100%; height: 100px; z-index: 10; 
+            pointer-events: none; position: fixed; top: -100px; 
+            background: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(0,242,255,0.05) 50%, rgba(0,0,0,0) 100%); 
+            animation: scan 6s linear infinite; 
+        }
+        @keyframes scan { to { top: 100%; } }
+
+        /* 主容器 */
+        .container { 
+            width: 95%; max-width: 450px; 
+            margin: 40px auto; 
+            position: relative; 
+            z-index: 20; 
+        }
+
+        h1 { 
+            font-size: 45px; font-weight: 900; font-style: italic; 
+            background: linear-gradient(180deg, #fff 30%, #777 100%); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+            margin: 0; 
+        }
+
+        .sub-title { 
+            color: var(--cyan); 
+            font-size: 10px; 
+            letter-spacing: 5px; 
+            margin-bottom: 40px; 
+        }
+
+        /* 首頁導覽按鈕模塊 */
+        .main-menu { display: flex; flex-direction: column; gap: 12px; }
+        .nav-btn { 
+            text-decoration: none; padding: 18px; 
+            background: var(--glass); 
+            border: 1px solid rgba(255,255,255,0.1); 
+            color: #fff; font-size: 17px; font-weight: 900; 
+            clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%); 
+            transition: 0.3s; cursor: pointer; 
+            display: flex; align-items: center; justify-content: center; 
+        }
+        .nav-btn:hover { 
+            background: rgba(0,242,255,0.1); 
+            border-color: var(--cyan); 
+            box-shadow: 0 0 15px rgba(0,242,255,0.2); 
+            transform: scale(1.02); 
+        }
+        .btn-tiktok { border-left: 5px solid var(--pink); }
+        .btn-players { border-left: 5px solid var(--gold); color: var(--gold); }
+        .btn-discord { border-left: 5px solid #5865f2; }
+
+        /* 彈窗 UI 系統 */
+        .modal { 
+            display: none; position: fixed; inset: 0; 
+            background: rgba(0,0,0,0.95); 
+            z-index: 1000; backdrop-filter: blur(15px); 
+            justify-content: center; align-items: center; 
+            padding: 20px; 
+        }
+
+        .modal-content { 
+            background: #0a0a0a; 
+            padding: 25px; 
+            border: 2px solid var(--gold); 
+            width: 100%; max-width: 400px; 
+            max-height: 85vh; 
+            overflow-y: auto; 
+            position: relative; 
+            clip-path: polygon(0 0, 92% 0, 100% 8%, 100% 100%, 8% 100%, 0 92%); 
+        }
+        
+        /* 遊戲切換標籤 */
+        .game-tabs { 
+            display: flex; gap: 10px; 
+            margin: 20px 0; 
+            border-bottom: 1px solid #222; 
+            padding-bottom: 15px; 
+            overflow-x: auto; 
+        }
+        .tab { 
+            padding: 8px 16px; border: 1px solid #333; 
+            cursor: pointer; font-size: 13px; 
+            white-space: nowrap; transition: 0.3s; color: #666; 
+        }
+        .tab.active { 
+            background: var(--cyan); color: #000; 
+            border-color: var(--cyan); font-weight: 900; 
+        }
+
+        /* 打手卡片樣式 */
+        .p-card { 
+            background: rgba(255,255,255,0.02); 
+            border: 1px solid #1a1a1a; 
+            padding: 12px; 
+            display: flex; align-items: center; gap: 15px; 
+            cursor: pointer; 
+            border-left: 4px solid var(--gold); 
+            margin-bottom: 10px; 
+            transition: 0.2s;
+        }
+        .p-avatar { 
+            width: 55px; height: 55px; 
+            border-radius: 50%; 
+            border: 2px solid var(--cyan); 
+            object-fit: cover; background: #222; 
+        }
+
+        /* 管理員介面樣式 */
+        .admin-section { 
+            text-align: left; 
+            background: rgba(255,255,255,0.01); 
+            border: 1px solid #222; 
+            padding: 15px; 
+            margin-bottom: 20px; 
+        }
+        .admin-section h3 { color: var(--gold); font-size: 14px; margin-top: 0; }
+        
+        input, select, textarea { 
+            width: 100%; background: #111; 
+            border: 1px solid #333; color: #fff; 
+            padding: 12px; margin-bottom: 12px; 
+            box-sizing: border-box; font-family: inherit; 
+        }
+
+        .btn-exe { 
+            width: 100%; padding: 15px; 
+            background: var(--gold); color: #000; 
+            font-weight: 900; border: none; cursor: pointer; 
+            clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%); 
+        }
+
+        .mgmt-item { 
+            display: flex; justify-content: space-between; 
+            align-items: center; padding: 10px; 
+            background: #000; border-bottom: 1px solid #111; 
+            font-size: 13px; 
+        }
+
+        .btn-edit { background: #444; color: #fff; border: none; padding: 5px 10px; cursor: pointer; margin-right: 5px; }
+        .btn-kick { background: var(--pink); color: #fff; border: none; padding: 5px 10px; cursor: pointer; }
+
+        .close-txt { color: #555; font-size: 12px; margin-top: 20px; cursor: pointer; display: inline-block; }
+        .admin-trigger { margin-top: 80px; opacity: 0.05; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="scanline"></div>
+
+<div class="container">
+    <h1>玄封電競</h1>
+    <div class="sub-title">XUAN FENG CORE v11.0</div>
+
+    <div class="main-menu">
+        <a href="https://www.tiktok.com/@xuenfeng_xu666_?_r=1" target="_blank" class="nav-btn btn-tiktok">TIKTOK 頻道</a>
+        <div class="nav-btn btn-players" onclick="openPlayerList()">頂尖打手名錄</div>
+        <a href="https://discord.gg/vCcFpKuzR" target="_blank" class="nav-btn btn-discord">DISCORD 語音</a>
+        <a href="https://lin.ee/rTNT2B6" target="_blank" class="nav-btn">LINE 官方客服</a>
+        <a href="https://youtube.com/@xfg-mtd?si=WVPbE8pA1G5B-Unt" target="_blank" class="nav-btn">YOUTUBE 賽事</a>
+    </div>
+
+    <div class="admin-trigger" onclick="adminAuth()">CORE_SYSTEM_ACCESS</div>
+</div>
+
+<div id="list-modal" class="modal"><div class="modal-content">
+    <h2 style="color:var(--gold); font-style:italic;">ELITE PLAYERS</h2>
+    <div class="game-tabs" id="game-tabs-box">
+        <div class="tab active" onclick="setFilter('PUBG')">PUBG</div>
+        <div class="tab" onclick="setFilter('三角洲')">三角洲</div>
+        <div class="tab" onclick="setFilter('其他')">其他</div>
+    </div>
+    <div id="player-list">資料讀取中...</div>
+    <div class="close-txt" onclick="closeModal('list-modal')">[ 關閉名錄 ]</div>
+</div></div>
+
+<div id="profile-modal" class="modal"><div class="modal-content" id="profile-body"></div></div>
+
+<div id="admin-modal" class="modal"><div class="modal-content">
+    <h2 style="color:var(--gold)">玄封核心管理後台</h2>
+    
+    <div class="admin-section">
+        <h3 id="form-title">成員資料入庫</h3>
+        <input type="text" id="adm-name" placeholder="打手代號 (若填「點擊下單」則觸發跳轉)">
+        <select id="adm-game">
+            <option value="PUBG">PUBG</option>
+            <option value="三角洲">三角洲</option>
+            <option value="其他">其他</option>
+        </select>
+        <textarea id="adm-desc" rows="3" placeholder="打手簡介/戰績 (跳轉模式可不填)"></textarea>
+        <input type="text" id="adm-url" placeholder="跳轉連結/頻道網址">
+        <input type="text" id="adm-img" placeholder="頭像圖片網址 (URL)">
+        <button id="submit-btn" class="btn-exe" onclick="handleData()">執行：資料存檔</button>
+        <button id="cancel-btn" style="display:none; background:none; color:#555; border:none; margin-top:10px; cursor:pointer;" onclick="resetForm()">[ 取消編輯模式 ]</button>
+    </div>
+
+    <div class="admin-section">
+        <h3>現有名單管理</h3>
+        <div id="mgmt-box"></div>
+    </div>
+
+    <div class="close-txt" onclick="closeModal('admin-modal')">[ 斷開核心連結 ]</div>
+</div></div>
+
+<script>
+    // 資料庫設定
+    const SB_URL = "https://chjuzpbocdkdiyuuziye.supabase.co"; 
+    const SB_KEY = "sb_publishable_kFflCNsyHLFgc8Ee_iWAEw_q5AFG3YC";
+    const _sb = supabase.createClient(SB_URL, SB_KEY);
+    
+    let allPlayers = [];
+    let filterGame = 'PUBG';
+    let editId = null;
+
+    // 初始化程式
+    async function init() {
+        const { data } = await _sb.from('players').select('*').order('id', { ascending: false });
+        allPlayers = data || [];
+        renderList();
+        
+        // 免重複登入判斷
+        if (sessionStorage.getItem('xf_admin') === 'true') {
+            renderMgmt();
+        }
     }
 
+    // 名錄切換與分類
+    function openPlayerList() { openModal('list-modal'); init(); }
+    function setFilter(g) { 
+        filterGame = g; 
+        document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.innerText === g)); 
+        renderList(); 
+    }
+    
+    // 核心渲染模塊 (包含跳轉邏輯)
+    function renderList() {
+        const box = document.getElementById('player-list');
+        const filtered = allPlayers.filter(p => p.game_type === filterGame);
+        
+        box.innerHTML = filtered.map(p => {
+            // 跳轉模塊：如果名字是「點擊下單」
+            if (p.name === '點擊下單') {
+                return `
+                    <a href="${p.url}" target="_blank" style="text-decoration:none; color:inherit;">
+                        <div class="p-card" style="border-left: 4px solid var(--cyan); background: rgba(0,242,255,0.08);">
+                            <img src="${p.avatar_url || ''}" class="p-avatar" onerror="this.src='https://via.placeholder.com/100?text=GO'">
+                            <div style="text-align:left">
+                                <div style="font-weight:900; color:var(--cyan); font-size:18px;">${p.name}</div>
+                                <div style="color:#fff; font-size:10px;">DIRECT ACCESS</div>
+                            </div>
+                        </div>
+                    </a>
+                `;
+            }
+
+            // 一般成員模塊
+            return `
+                <div class="p-card" onclick="showProfile(${p.id})">
+                    <img src="${p.avatar_url || ''}" class="p-avatar" onerror="this.src='https://via.placeholder.com/100?text=XF'">
+                    <div style="text-align:left">
+                        <div style="font-weight:900;">${p.name}</div>
+                        <div style="color:var(--cyan); font-size:10px;">ELITE STATUS</div>
+                    </div>
+                </div>
+            `;
+        }).join('') || `<div style="padding:40px; color:#444;">目前尚無成員資料</div>`;
+    }
+
+    // 顯示詳細檔案
     function showProfile(id) {
         const p = allPlayers.find(x => x.id === id);
         document.getElementById('profile-body').innerHTML = `
             <img src="${p.avatar_url || ''}" class="p-avatar" style="width:90px; height:90px;" onerror="this.src='https://via.placeholder.com/100?text=XF'">
-            <h2 style="color:var(--gold); margin:10px 0;">${p.name}</h2>
-            <p style="font-size:14px; text-align:left; color:#888; line-height:1.6;">${p.description || '暫無內容'}</p>
-            <a href="${p.url}" target="_blank" class="btn-exe" style="display:block; text-decoration:none;">前往頻道/主頁</a>
+            <h2 style="color:var(--gold); margin:15px 0;">${p.name}</h2>
+            <p style="font-size:14px; text-align:left; color:#888; line-height:1.6; border-top:1px solid #222; padding-top:15px;">${p.description || '該打手非常神秘，暫時沒有留下簡介。'}</p>
+            <a href="${p.url}" target="_blank" class="btn-exe" style="display:block; text-decoration:none; margin-top:20px;">前往個人頻道/連結</a>
             <div class="close-txt" onclick="closeModal('profile-modal')">[ 返回名單 ]</div>
         `;
         openModal('profile-modal');
     }
 
-    // 管理功能
+    // 管理員驗證系統
     function adminAuth() {
-        if(prompt("玄封核心密碼：") === "@8888") {
+        if(prompt("請輸入玄封核心管理密碼：") === "@8888") {
             sessionStorage.setItem('xf_admin', 'true');
             openModal('admin-modal');
             renderMgmt();
         }
     }
 
+    // 資料存檔/更新邏輯
     async function handleData() {
         const name = document.getElementById('adm-name').value;
         const game = document.getElementById('adm-game').value;
@@ -151,20 +456,21 @@
         const url = document.getElementById('adm-url').value;
         const img = document.getElementById('adm-img').value;
 
-        if(!name || !url) return alert("代號與連結不可為空");
+        if(!name || !url) return alert("代號與連結為必填項目！");
 
         const payload = { name, game_type: game, description: desc, url, avatar_url: img };
 
         if(editId) {
-            await _sb.from('players').update(payload).eq('id', editId);
-            alert("成員資料已成功修正");
+            const { error } = await _sb.from('players').update(payload).eq('id', editId);
+            if(!error) alert("成員資料修正成功");
         } else {
-            await _sb.from('players').insert([payload]);
-            alert("新打手已成功入庫");
+            const { error } = await _sb.from('players').insert([payload]);
+            if(!error) alert("新成員已入庫");
         }
         location.reload();
     }
 
+    // 啟動編輯模式
     function startEdit(id) {
         const p = allPlayers.find(x => x.id === id);
         editId = id;
@@ -174,15 +480,14 @@
         document.getElementById('adm-url').value = p.url;
         document.getElementById('adm-img').value = p.avatar_url || "";
         
-        document.getElementById('form-title').innerText = "修正成員資料";
-        document.getElementById('submit-btn').innerText = "更新資料檔案";
+        document.getElementById('form-title').innerText = "修正成員資料模式";
+        document.getElementById('submit-btn').innerText = "確認更新";
         document.getElementById('submit-btn').style.background = "var(--cyan)";
         document.getElementById('cancel-btn').style.display = "block";
         document.getElementById('admin-modal').scrollTop = 0;
     }
 
-    function resetForm() { editId = null; location.reload(); }
-
+    // 渲染管理清單
     function renderMgmt() {
         const box = document.getElementById('mgmt-box');
         if(!box) return;
@@ -197,12 +502,26 @@
         `).join('');
     }
 
-    async function kick(id) { if(confirm("確定要踢出此打手？")) { await _sb.from('players').delete().eq('id', id); location.reload(); } }
+    // 刪除邏輯
+    async function kick(id) {
+        if(confirm("確定要將此成員剔除名錄？")) {
+            await _sb.from('players').delete().eq('id', id);
+            location.reload();
+        }
+    }
+
+    // 視窗控制
+    function resetForm() { editId = null; location.reload(); }
     function openModal(id) { document.getElementById(id).style.display = 'flex'; }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
     
+    // 執行初始化
     init();
-    if(sessionStorage.getItem('xf_admin') === 'true') { openModal('admin-modal'); }
+    
+    // 如果 Session 存在，自動開啟管理後台
+    if(sessionStorage.getItem('xf_admin') === 'true') {
+        openModal('admin-modal');
+    }
 </script>
 </body>
 </html>
